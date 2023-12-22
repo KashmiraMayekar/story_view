@@ -125,7 +125,7 @@ class StoryItem {
     String? userName,
     String? userProfile,
     Key? key,
-    BoxFit imageFit = BoxFit.fitWidth,
+    BoxFit imageFit = BoxFit.cover,
     String? caption,
     bool shown = false,
     Map<String, dynamic>? requestHeaders,
