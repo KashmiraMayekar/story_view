@@ -3,10 +3,11 @@ import 'dart:io';
 import 'dart:math' as math;
 import 'dart:ui';
 
-import 'package:cached_video_player/cached_video_player.dart';
+// import 'package:cached_video_player/cached_video_player.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:shimmer/shimmer.dart';
+import 'package:video_player/video_player.dart';
 
 import '../controller/story_controller.dart';
 import '../utils/utils.dart';
@@ -106,8 +107,10 @@ class StoryVideoState extends State<StoryVideo> {
   //bool
   bool isVideoLoaded = false;
 
-  CachedVideoPlayerController playerController =
-      CachedVideoPlayerController.network("");
+  VideoPlayerController? playerController;
+
+  // CachedVideoPlayerController playerController =
+  //     CachedVideoPlayerController.network("");
 
   var secondRandomColor =
       Color((math.Random().nextDouble() * 0x000000).toInt()).withOpacity(0.1);
@@ -124,28 +127,48 @@ class StoryVideoState extends State<StoryVideo> {
     widget.videoLoader.loadVideo(() {
       if (widget.videoLoader.state == LoadState.success) {
         /// if video is HLS, need to load it from network, if is a downloaded file, need to load it from local cache
-        if (widget.isHLS == true) {
-          this.playerController =
-              CachedVideoPlayerController.network(widget.videoLoader.url);
-        } else {
-          this.playerController =
-              CachedVideoPlayerController.file(widget.videoLoader.videoFile!);
-        }
-        this.playerController.initialize().then((v) {
+        // if (widget.isHLS == true) {
+        //   this.playerController =
+        //       CachedVideoPlayerController.network(widget.videoLoader.url);
+        // } else {
+        //   this.playerController =
+        //       CachedVideoPlayerController.file(widget.videoLoader.videoFile!);
+        // }
+        // this.playerController.initialize().then((v) {
+        //   setState(() {});
+        //   widget.storyController.play();
+        // });
+        //
+        // if (widget.storyController != null) {
+        //   _streamSubscription =
+        //       widget.storyController.playbackNotifier.listen((playbackState) {
+        //     if (playbackState == PlaybackState.pause) {
+        //       playerController.pause();
+        //     } else {
+        //       playerController.play();
+        //     }
+        //   });
+        // }
+        print('Cool=========${widget.videoLoader.videoFile}');
+        this.playerController =
+            VideoPlayerController.file(widget.videoLoader.videoFile!);
+
+        playerController!.initialize().then((v) {
           setState(() {});
-          widget.storyController.play();
+          widget.storyController!.play();
         });
 
         if (widget.storyController != null) {
           _streamSubscription =
-              widget.storyController.playbackNotifier.listen((playbackState) {
-            if (playbackState == PlaybackState.pause) {
-              playerController.pause();
-            } else {
-              playerController.play();
-            }
-          });
+              widget.storyController!.playbackNotifier.listen((playbackState) {
+                if (playbackState == PlaybackState.pause) {
+                  playerController!.pause();
+                } else {
+                  playerController!.play();
+                }
+              });
         }
+
       } else {
         setState(() {});
       }
@@ -154,7 +177,7 @@ class StoryVideoState extends State<StoryVideo> {
 
   Widget getContentView() {
     if (widget.videoLoader.state == LoadState.success &&
-        playerController.value.isInitialized) {
+        playerController!.value.isInitialized) {
       return Container(
         color: Colors.black,
         height: MediaQuery.of(context).size.height,
@@ -182,9 +205,9 @@ class StoryVideoState extends State<StoryVideo> {
                                 child: FittedBox(
                                   fit: widget.fit,
                                   child: SizedBox(
-                                    width: playerController.value.aspectRatio,
+                                    width: playerController!.value.aspectRatio,
                                     height: 1,
-                                    child: CachedVideoPlayer(playerController),
+                                    child: VideoPlayer(playerController!),
                                   ),
                                 ),
                                 // child: AspectRatio(
@@ -253,9 +276,9 @@ class StoryVideoState extends State<StoryVideo> {
                 child: FittedBox(
                   fit: widget.fit,
                   child: SizedBox(
-                    width: playerController.value.aspectRatio,
+                    width: playerController!.value.aspectRatio,
                     height: 1,
-                    child: CachedVideoPlayer(playerController),
+                    child: VideoPlayer(playerController!),
                   ),
                 ),
                 // child: FittedBox(
@@ -270,7 +293,7 @@ class StoryVideoState extends State<StoryVideo> {
     }
 
     return widget.videoLoader.state == LoadState.loading ||
-            !playerController.value.isInitialized == true
+            !playerController!.value.isInitialized == true
         ? Shimmer.fromColors(
             baseColor: Color(0xFF222124),
             highlightColor: Colors.grey.withOpacity(0.2),
@@ -319,7 +342,7 @@ class StoryVideoState extends State<StoryVideo> {
                 ),
               ),
               widget.videoLoader.state == LoadState.loading ||
-                      !playerController.value.isInitialized == true
+                      !playerController!.value.isInitialized == true
                   ? Container()
                   : Align(
                       alignment: FractionalOffset.bottomCenter,
@@ -373,7 +396,7 @@ class StoryVideoState extends State<StoryVideo> {
 
   @override
   void dispose() {
-    playerController.dispose();
+    playerController!.dispose();
     _streamSubscription?.cancel();
     super.dispose();
   }
